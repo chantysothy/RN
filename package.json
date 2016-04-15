@@ -1,0 +1,26 @@
+{
+  "name": "RN",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node node_modules/react-native/local-cli/cli.js start",
+    "remotedev": "remotedev --hostname=localhost --port=8000"
+  },
+  "dependencies": {
+    "react": "^0.14.8",
+    "react-native": "^0.22.2",
+    "react-native-button": "^1.4.2",
+    "react-native-gifted-listview": "0.0.14",
+    "react-native-navbar": "^1.4.2",
+    "react-native-navigation-bar": "^0.1.10",
+    "react-native-router-redux": "^0.2.2",
+    "react-native-viewpager": "^0.2.1",
+    "react-redux": "^4.4.4",
+    "redux": "^3.4.0",
+    "redux-thunk": "^2.0.1",
+    "remote-redux-devtools": "^0.1.5"
+  },
+  "devDependencies": {
+    "remotedev-server": "0.0.6"
+  }
+}
