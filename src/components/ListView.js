@@ -1,9 +1,12 @@
 'use strict';
 
-import React, { Component, StyleSheet, Text, Image, View, ListView, TouchableHighlight } from 'react-native';
+import React, { Component, StyleSheet, Text, Image, View, ListView, TouchableHighlight, RecyclerViewBackedScrollView } from 'react-native';
 import GiftedListView from 'react-native-gifted-listview';
+import { ControlledRefreshableListView } from 'react-native-refreshable-listview';
 
 import StyleBase from './StyleBase';
+
+const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
 
 class MyListView extends Component {
 
@@ -11,40 +14,30 @@ class MyListView extends Component {
         super(props);
 
         this._onPress = this._onPress.bind(this);
-        this._renderRowView = this._renderRowView.bind(this);
-        this._onFetch = this._onFetch.bind(this);
+        this._renderRow = this._renderRow.bind(this);
+        this._loadRow = this._loadRow.bind(this);
+    }
+
+    componentWillMount() {
+      this._loadRow();
+    }
+
+    _loadRow() {
+      const { listNews } = this.props;
+      listNews();
     }
 
 
-    /**
-     * Will be called when refreshing
-     * Should be replaced by your own logic
-     * @param {number} page Requested page to fetch
-     * @param {function} callback Should pass the rows
-     * @param {object} options Inform if first load
-     */
-    _onFetch(page = 1, callback, options) {
-      setTimeout(() => {
-        var rows = ['row '+((page - 1) * 3 + 1), 'row '+((page - 1) * 3 + 2), 'row '+((page - 1) * 3 + 3)];
-        if (page === 5) {
-          callback(rows, {
-            allLoaded: true, // the end of the list is reached
-          });
-        } else {
-          callback(rows);
-        }
-      }, 1000); // simulating network fetching
-    }
 
     _onPress(rowData) {
       console.log(rowData+' pressed');
 
     }
 
-    _renderRowView(rowData) {
-
-        const { actions, assets } = this.props;
-    var imgSource = THUMB_URLS[5];
+    _renderRow(rowData: object, sectionID: number, rowID: number) {
+      console.log(rowData);
+      const { actions, assets } = this.props;
+      var imgSource = THUMB_URLS[5];
       return (
         <TouchableHighlight
           style={styles.row}
@@ -53,38 +46,56 @@ class MyListView extends Component {
         >
           <View style={styles.rowView}>
               <Image style={styles.thumb} source={imgSource} />
-              <Text style={styles.text}>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</Text>
+              <View style={styles.text}>
+                <Text style={styles.title}>{rowData.title}</Text>
+                <View style={styles.desc}>
+                  <Text>{rowData.desc}</Text>
+                </View>
+              </View>
           </View>
         </TouchableHighlight>
       );
     }
 
   render() {
-    const { actions, assets } = this.props;
-
+    const { actions, assets, news} = this.props;
+    console.log(news.newsList);
+    // const dataSource = ds.cloneWithRows(news.newsList.rows);
+    const data = news.newsList && news.newsList.rows instanceof Array ? news.newsList.rows : [];
+    const dataSource = ds.cloneWithRows(data);
     return (
         <View style={styles.container,styles.containerBase}>
-            <GiftedListView
-              rowView={this._renderRowView}
-              onFetch={this._onFetch}
-              firstLoader={true} // display a loader for the first fetching
-              pagination={true} // enable infinite scrolling using touch to load more
-              refreshable={true} // enable pull-to-refresh for iOS and touch-to-refresh for Android
-              withSections={false} // enable sections
-              customStyles={{
-                paginationView: {
-                  backgroundColor: '#eee',
-                },
-              }}
-
-              refreshableTintColor="blue"
-            />
-          </View>
+          <ControlledRefreshableListView
+            dataSource={dataSource}
+            renderRow={this._renderRow}
+            isRefreshing={news.isFetching}
+            onRefresh={this._loadRow}
+            refreshDescription="Refreshing articles"
+          />
+        </View>
     );
   }
 }
 
-export default MyListView
+import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
+import * as NewsActions from '../reducers/news/newsActions';
+
+function mapStateToProps(state) {
+
+  console.log(state);
+  return {
+    // news: state.news,
+    news: state.news
+  };
+}
+function mapDispatchToProps(dispatch) {
+  return bindActionCreators(NewsActions, dispatch);
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(MyListView);
+
+// export default MyListView
 
 var styles = StyleSheet.create({
     container: {
@@ -107,7 +118,7 @@ var styles = StyleSheet.create({
     },
     text: {
         flex: 1,
-        textAlign: 'left'
+        flexDirection: 'column',
     },
     ...StyleBase
 });
