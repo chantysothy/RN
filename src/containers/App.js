@@ -30,7 +30,8 @@ import Error from '../components/Error';
 import SignIn from '../components/SignIn';
 import Detail from '../components/Detail';
 import Master from '../components/Master';
-import ListView from '../components/ListView';
+import NewsListView from '../components/NewsListView';
+import NewsDetail from '../components/NewsDetail';
 
 // define your routes
 const defaultSchema = {
@@ -57,15 +58,16 @@ const assets = {
 class App extends Component{
     render() {
         return (
-    <Router {...this.props} assets={assets} initial="tab3">
+    <Router {...this.props} assets={assets} initial="launch">
         <Schema name="default" {...defaultSchema} />
 
         <Route name="launch" component={Launch} type="reset" hideNavBar={true} />
         <Route name="detail" component={Detail} />
+        <Route name="newsDetail" component={NewsDetail} />
         <TabRoute name="tabBar" >
           <Route name="tab1" component={Master('#111')} title="Home" tabItem={{icon: assets['home'], title: 'Home'}} />
           <Route name="tab2" component={Counter} title="Calendar" tabItem={{icon: assets['calendar'], title: 'Calendar'}} />
-          <Route name="tab3" component={ListView} title="列表" tabItem={{icon: assets['video'], title: '列表'}} />
+          <Route name="tab3" component={NewsListView} title="News" tabItem={{icon: assets['video'], title: 'News'}} />
           <Route name="tab4" component={Master('#444')} title="Profile" tabItem={{icon: assets['profile'], title: 'Profile'}} />
         </TabRoute>
       </Router>

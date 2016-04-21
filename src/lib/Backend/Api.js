@@ -8,7 +8,7 @@ import CONFIG from './config';
 import _ from 'underscore';
 import Backend from './Backend';
 
-import RestKit from 'react-native-rest-kit';
+
 
 class Api {
     constructor(token) {
@@ -22,12 +22,16 @@ class Api {
     //     _.isNull(token) ?  null :  token.sessionToken.sessionToken;
       //
       this.API_BASE_URL= CONFIG.API.BASE_URL;
+
     }
 
-    async listNews() {
+    async listNews(query = {}) {
+        const page = query.page || 1;
+        console.log(page);
+        const pageRows = query.pageRows || 10;
         return await this._fetch({
           method: 'GET',
-          url: '/news'
+          url: `/news?page=${page}&pageRows=${pageRows}`,
         })
         .then((response) => {
           var json = response.json();
@@ -76,4 +80,6 @@ class Api {
     }
 }
 
+
+require('./NewsApi')(Api);
 export default Api;

@@ -9,6 +9,9 @@ const {
     LIST_NEWS_REQUEST,
     LIST_NEWS_SUCCESS,
     LIST_NEWS_FAILURE,
+
+    REFRESH_NEWS_LIST,
+    NEXT_PAGE_NEWS_LIST,
     // 点赞
     GOOD_NEWS_REQUEST,
     GOOD_NEWS_SUCCESS,
@@ -33,6 +36,8 @@ const {
 
 import { BackendFactory } from '../../lib/Backend';
 
+// LIST
+
 export function listNewsRequest() {
     return {
       type: LIST_NEWS_REQUEST
@@ -52,17 +57,78 @@ export function listNewsFailure(error) {
     };
 }
 
-export function listNews() {
+export function listNews(query,beforeSuccess) {
+  console.log(query);
     return dispatch => {
       dispatch(listNewsRequest());
       return  BackendFactory()
-            .listNews()
+            .listNews(query)
             .then((json) => {
+                if(beforeSuccess instanceof Function) {
+                  beforeSuccess();
+                }
                 dispatch(listNewsSuccess(json));
                 return json;
             })
             .catch((error) => {
                  dispatch(listNewsFailure(error));
+            });
+
+    };
+}
+
+export function refreshNews() {
+
+  return dispatch => {
+
+    dispatch(listNews({},function(){
+      dispatch({
+        type: REFRESH_NEWS_LIST,
+      });
+    }));
+  }
+}
+
+export function nextPageNews() {
+  return dispatch => {
+    dispatch({
+      type: NEXT_PAGE_NEWS_LIST,
+    });
+    dispatch(listNews());
+  }
+}
+
+// GET
+export function getNewsRequest() {
+  return {
+    type: GET_NEWS_REQUEST,
+  }
+}
+
+export function getNewsSuccess(data) {
+    return {
+      type: GET_NEWS_SUCCESS,
+      payload: data
+    };
+}
+export function getNewsFailure(error) {
+    return {
+      type: GET_NEWS_FAILURE,
+      payload: error
+    };
+}
+
+export function getNews(query) {
+    return dispatch => {
+      dispatch(getNewsRequest());
+      return  BackendFactory()
+            .getNews(query)
+            .then((json) => {
+                dispatch(getNewsSuccess(json));
+                return json;
+            })
+            .catch((error) => {
+                 dispatch(getNewsFailure(error));
             });
 
     };

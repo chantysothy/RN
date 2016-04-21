@@ -1,14 +1,23 @@
 'use strict';
 
-import React, { Component, StyleSheet, Text, Image, View, ListView, TouchableHighlight, RecyclerViewBackedScrollView } from 'react-native';
+import React, {
+  Component,
+  StyleSheet,
+  Text,
+  Image,
+  View,
+  ListView,
+  TouchableHighlight,
+  RecyclerViewBackedScrollView,
+  RefreshControl
+} from 'react-native';
 import GiftedListView from 'react-native-gifted-listview';
-import { ControlledRefreshableListView } from 'react-native-refreshable-listview';
 
 import StyleBase from './StyleBase';
 
 const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
 
-class MyListView extends Component {
+class NewsListView extends Component {
 
     constructor(props) {
         super(props);
@@ -16,6 +25,9 @@ class MyListView extends Component {
         this._onPress = this._onPress.bind(this);
         this._renderRow = this._renderRow.bind(this);
         this._loadRow = this._loadRow.bind(this);
+        this._onScroll = this._onScroll.bind(this);
+        this._onEndReached = this._onEndReached.bind(this);
+        this._onChangeVisibleRows = this._onChangeVisibleRows.bind(this);
     }
 
     componentWillMount() {
@@ -27,11 +39,31 @@ class MyListView extends Component {
       listNews();
     }
 
+    _onPress(rowId) {
+      console.log(arguments);
+      const { actions, news , getNews} = this.props;
+      const data = news.rows[rowId];
+      // getNews(data._id);
+      actions.routes.newsDetail({
+        title: data.title,
+        data: data
+      })();
+    }
 
+    _onScroll() {
+      // console.log(arguments);
+    }
 
-    _onPress(rowData) {
-      console.log(rowData+' pressed');
+    _onEndReached() {
+      const { actions, news, refreshNews, listNews} = this.props;
+      listNews({
+        page: news.page+1,
+        pageRows: news.pageRows
+      });
+    }
 
+    _onChangeVisibleRows() {
+      console.log('_onChangeVisibleRows');
     }
 
     _renderRow(rowData: object, sectionID: number, rowID: number) {
@@ -42,7 +74,7 @@ class MyListView extends Component {
         <TouchableHighlight
           style={styles.row}
           underlayColor='#c8c7cc'
-          onPress={actions.routes.detail()}
+          onPress={() => this._onPress(rowID)}
         >
           <View style={styles.rowView}>
               <Image style={styles.thumb} source={imgSource} />
@@ -58,19 +90,29 @@ class MyListView extends Component {
     }
 
   render() {
-    const { actions, assets, news} = this.props;
+    const { actions, assets, news, refreshNews, listNews} = this.props;
     console.log(news.newsList);
+    console.log(news.page);
+    console.log(news.pageRows);
     // const dataSource = ds.cloneWithRows(news.newsList.rows);
     const data = news.newsList && news.newsList.rows instanceof Array ? news.newsList.rows : [];
-    const dataSource = ds.cloneWithRows(data);
+    const dataSource = ds.cloneWithRows(news.rows || []);
+    const isRefreshing = news.isFetching;
+
     return (
         <View style={styles.container,styles.containerBase}>
-          <ControlledRefreshableListView
+          <ListView
             dataSource={dataSource}
             renderRow={this._renderRow}
-            isRefreshing={news.isFetching}
-            onRefresh={this._loadRow}
-            refreshDescription="Refreshing articles"
+            onEndReached={this._onEndReached}
+            onEndReachedThreshold={10}
+            onChangeVisibleRows={this._onChangeVisibleRows}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={refreshNews}
+              />
+            }
           />
         </View>
     );
@@ -83,7 +125,6 @@ import * as NewsActions from '../reducers/news/newsActions';
 
 function mapStateToProps(state) {
 
-  console.log(state);
   return {
     // news: state.news,
     news: state.news
@@ -93,7 +134,7 @@ function mapDispatchToProps(dispatch) {
   return bindActionCreators(NewsActions, dispatch);
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(MyListView);
+export default connect(mapStateToProps, mapDispatchToProps)(NewsListView);
 
 // export default MyListView
 

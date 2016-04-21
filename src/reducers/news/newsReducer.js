@@ -9,6 +9,9 @@ const {
     LIST_NEWS_REQUEST,
     LIST_NEWS_SUCCESS,
     LIST_NEWS_FAILURE,
+
+    REFRESH_NEWS_LIST,
+    NEXT_PAGE_NEWS_LIST,
     // 点赞
     GOOD_NEWS_REQUEST,
     GOOD_NEWS_SUCCESS,
@@ -38,10 +41,29 @@ export default function news(state = initialState, action) {
   switch (action.type) {
 
   case LIST_NEWS_REQUEST:
-    return state.set('isFetching', true);
+    return state.set('isFetching', true)
+    .set('error', null);
   case LIST_NEWS_SUCCESS:
-    return state.set('isFetching', false).set('newsList', action.payload);
+    return state.set('isFetching', false)
+    .set('rows', state.rows.concat(action.payload.rows))
+    .set('page', action.payload.page)
+    .set('pageRows', action.payload.pageRows)
+    .set('error', null);
   case LIST_NEWS_FAILURE:
+    return state.set('isFetching', false)
+    .set('error', action.payload);
+  case REFRESH_NEWS_LIST:
+    return state.set('rows', []);
+  case NEXT_PAGE_NEWS_LIST:
+    return state.set('newsList', null);
+
+  case GET_NEWS_REQUEST:
+    return state.set('isFetching', true).set('error', null);
+  case GET_NEWS_SUCCESS:
+    return state.set('isFetching', false)
+    .set('detail', action.payload)
+    .set('error', null);
+  case GET_NEWS_FAILURE:
     return state.set('isFetching', false).set('error', action.payload);
   default:
     return state;

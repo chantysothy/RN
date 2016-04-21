@@ -65,6 +65,9 @@ export default keyMirror({
   LIST_NEWS_REQUEST:null,
   LIST_NEWS_SUCCESS:null,
   LIST_NEWS_FAILURE:null,
+  
+  REFRESH_NEWS_LIST:null,
+  NEXT_PAGE_NEWS_LIST:null,
   // 点赞
   GOOD_NEWS_REQUEST:null,
   GOOD_NEWS_SUCCESS:null,

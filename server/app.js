@@ -4,12 +4,40 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var nconf = require('nconf');
+
+nconf.argv().env('__');
+global.env = process.env.NODE_ENV || 'production';
+var winston = require('winston');
+winston.remove(winston.transports.Console);
+winston.add(winston.transports.Console, {
+	colorize: true,
+	timestamp: function() {
+		var date = new Date();
+		return date.getDate() + '/' + (date.getMonth() + 1) + ' ' + date.toTimeString().substr(0,5) + ' [' + global.process.pid + ']';
+	},
+	level: nconf.get('log-level') || (global.env === 'production' ? 'info' : 'verbose')
+});
+
+var	configFile = path.join(__dirname, '/config.json');
+nconf.file({
+  file: configFile
+});
+
+
+var db = require('./database');
+
+
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
 var news = require('./routes/news');
 
+
+
 var app = express();
+
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
