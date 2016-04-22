@@ -5,19 +5,43 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var nconf = require('nconf');
+var mongoose = require('mongoose');
+mongoose.connect('mongodb://127.0.0.1:27017/rn', {});
+
+var oauthserver = require('oauth2-server');
+var auth = require('./auth');
+// var model = {
+//   getAccessToken: function *() {
+//     yield somethingAsync();
+//
+//     return 'works!'
+//   },
+//
+//   getAuthorizationCode: async function() {
+//     await somethingAsync();
+//
+//     return 'works';
+//   },
+//
+//   // Or, calling a node-style callback.
+//   getClient: function(done) {
+//     if (/* something went wrong*/) {
+//       return done(new Error());
+//     }
+//
+//     done(null, 'works!');
+//   },
+//
+//   // Or, returning a promise.
+//   getUser: function() {
+//     return new Promise('works!');
+//   },
+// };
+
+
 
 nconf.argv().env('__');
 global.env = process.env.NODE_ENV || 'production';
-var winston = require('winston');
-winston.remove(winston.transports.Console);
-winston.add(winston.transports.Console, {
-	colorize: true,
-	timestamp: function() {
-		var date = new Date();
-		return date.getDate() + '/' + (date.getMonth() + 1) + ' ' + date.toTimeString().substr(0,5) + ' [' + global.process.pid + ']';
-	},
-	level: nconf.get('log-level') || (global.env === 'production' ? 'info' : 'verbose')
-});
 
 var	configFile = path.join(__dirname, '/config.json');
 nconf.file({
@@ -37,7 +61,7 @@ var news = require('./routes/news');
 
 var app = express();
 
-
+app.oauth = auth.server;
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -51,10 +75,18 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+
+app.all('/oauth/token', app.oauth.grant());
+app.get('/', app.oauth.authorise(), function (req, res) {
+  res.send('Secret area');
+});
+
+
 app.use('/', routes);
 app.use('/users', users);
 app.use('/news', news);
 
+app.use(app.oauth.errorHandler());
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   var err = new Error('Not Found');

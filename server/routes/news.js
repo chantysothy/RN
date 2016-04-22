@@ -2,9 +2,22 @@ var express = require('express');
 var router = express.Router();
 var helper = require('mongoskin').helper;
 
+var auth = require('../auth');
+var News = require('../news').News;
+
+// News.create({
+//   title: '下周三中期汇报',
+//   article: '下周三中期汇报，又要演示啦'
+// },function(){
+//   console.log(arguments);
+// });
+// News.find().skip(3).limit(3).exec(function(){
+//   console.log(arguments);
+// });
 var db = require('../database');
 /* GET users listing. */
 router.get('/', function(req, res, next) {
+
   // db.collection('objects').insert({
   //     _key:'news',
   //     title: 'React native',

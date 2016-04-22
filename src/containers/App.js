@@ -58,12 +58,13 @@ const assets = {
 class App extends Component{
     render() {
         return (
-    <Router {...this.props} assets={assets} initial="launch">
+    <Router {...this.props} assets={assets} initial="login">
         <Schema name="default" {...defaultSchema} />
 
         <Route name="launch" component={Launch} type="reset" hideNavBar={true} />
         <Route name="detail" component={Detail} />
         <Route name="newsDetail" component={NewsDetail} />
+        <Route name="login" component={Login} />
         <TabRoute name="tabBar" >
           <Route name="tab1" component={Master('#111')} title="Home" tabItem={{icon: assets['home'], title: 'Home'}} />
           <Route name="tab2" component={Counter} title="Calendar" tabItem={{icon: assets['calendar'], title: 'Calendar'}} />
